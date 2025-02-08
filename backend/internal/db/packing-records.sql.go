@@ -12,19 +12,20 @@ import (
 )
 
 const getPackingRecords = `-- name: GetPackingRecords :many
-SELECT id, datetime, pic_name, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight, created_at
+SELECT id, datetime, pic, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight, created_at
 FROM packing_records
-WHERE datetime BETWEEN $1 AND $2
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 ORDER BY datetime
 `
 
 type GetPackingRecordsParams struct {
-	Datetime   pgtype.Timestamp `json:"datetime"`
-	Datetime_2 pgtype.Timestamp `json:"datetime_2"`
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
 }
 
 func (q *Queries) GetPackingRecords(ctx context.Context, arg GetPackingRecordsParams) ([]PackingRecord, error) {
-	rows, err := q.db.Query(ctx, getPackingRecords, arg.Datetime, arg.Datetime_2)
+	rows, err := q.db.Query(ctx, getPackingRecords, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func (q *Queries) GetPackingRecords(ctx context.Context, arg GetPackingRecordsPa
 		if err := rows.Scan(
 			&i.ID,
 			&i.Datetime,
-			&i.PicName,
+			&i.Pic,
 			&i.GrossWeight,
 			&i.PackAQty,
 			&i.PackBQty,
@@ -55,14 +56,14 @@ func (q *Queries) GetPackingRecords(ctx context.Context, arg GetPackingRecordsPa
 
 const newPackingRecord = `-- name: NewPackingRecord :one
 INSERT INTO packing_records
-  (datetime, pic_name, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight)
+  (datetime, pic, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight)
 VALUES($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, datetime, pic_name, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight, created_at
+RETURNING id, datetime, pic, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight, created_at
 `
 
 type NewPackingRecordParams struct {
 	Datetime     pgtype.Timestamp `json:"datetime"`
-	PicName      string           `json:"pic_name"`
+	Pic          string           `json:"pic"`
 	GrossWeight  pgtype.Numeric   `json:"gross_weight"`
 	PackAQty     int32            `json:"pack_a_qty"`
 	PackBQty     int32            `json:"pack_b_qty"`
@@ -73,7 +74,7 @@ type NewPackingRecordParams struct {
 func (q *Queries) NewPackingRecord(ctx context.Context, arg NewPackingRecordParams) (PackingRecord, error) {
 	row := q.db.QueryRow(ctx, newPackingRecord,
 		arg.Datetime,
-		arg.PicName,
+		arg.Pic,
 		arg.GrossWeight,
 		arg.PackAQty,
 		arg.PackBQty,
@@ -84,7 +85,7 @@ func (q *Queries) NewPackingRecord(ctx context.Context, arg NewPackingRecordPara
 	err := row.Scan(
 		&i.ID,
 		&i.Datetime,
-		&i.PicName,
+		&i.Pic,
 		&i.GrossWeight,
 		&i.PackAQty,
 		&i.PackBQty,

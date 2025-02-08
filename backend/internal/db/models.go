@@ -11,7 +11,7 @@ import (
 type PackingRecord struct {
 	ID           int32              `json:"id"`
 	Datetime     pgtype.Timestamp   `json:"datetime"`
-	PicName      string             `json:"pic_name"`
+	Pic          string             `json:"pic"`
 	GrossWeight  pgtype.Numeric     `json:"gross_weight"`
 	PackAQty     int32              `json:"pack_a_qty"`
 	PackBQty     int32              `json:"pack_b_qty"`

@@ -3,7 +3,7 @@
 CREATE TABLE packing_records (
     id SERIAL PRIMARY KEY,
     datetime TIMESTAMP NOT NULL,
-    pic_name VARCHAR(100) NOT NULL,
+    pic VARCHAR(100) NOT NULL,
     gross_weight DECIMAL(10,2) NOT NULL,
     pack_a_qty INTEGER NOT NULL,
     pack_b_qty INTEGER NOT NULL,

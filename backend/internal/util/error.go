@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
 )
@@ -16,59 +17,53 @@ type ErrorHandler struct {
 	logger *slog.Logger
 }
 
-func (eh *ErrorHandler) logError(r *http.Request, err error) {
+func (eh *ErrorHandler) logError(c *gin.Context, err error) {
 	eh.logger.Error("request error",
 		"error", err.Error(),
-		"method", r.Method,
-		"uri", r.RequestURI,
+		"method", c.Request.Method,
+		"uri", c.Request.RequestURI,
 	)
 }
 
-func (eh *ErrorHandler) WriteError(w http.ResponseWriter, r *http.Request, status int, message any) {
-	envelope := Envelope{"error": message}
-
-	err := WriteJSON(w, status, envelope, nil)
-	if err != nil {
-		eh.logError(r, err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+func (eh *ErrorHandler) WriteError(c *gin.Context, status int, message any) {
+	c.JSON(status, gin.H{"error": message})
 }
 
-func (eh *ErrorHandler) ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	eh.logError(r, err)
+func (eh *ErrorHandler) ServerErrorResponse(c *gin.Context, err error) {
+	eh.logError(c, err)
 	msg := "The server encountered a problem and could not process your request"
-	eh.WriteError(w, r, http.StatusInternalServerError, msg)
+	eh.WriteError(c, http.StatusInternalServerError, msg)
 }
 
-func (eh *ErrorHandler) NotFoundResponse(w http.ResponseWriter, r *http.Request) {
+func (eh *ErrorHandler) NotFoundResponse(c *gin.Context) {
 	msg := "The requested resource could not be found"
-	eh.WriteError(w, r, http.StatusNotFound, msg)
+	eh.WriteError(c, http.StatusNotFound, msg)
 }
 
-func (eh *ErrorHandler) MethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+func (eh *ErrorHandler) MethodNotAllowedResponse(c *gin.Context) {
 	msg := "Unsupported method"
-	eh.WriteError(w, r, http.StatusMethodNotAllowed, msg)
+	eh.WriteError(c, http.StatusMethodNotAllowed, msg)
 }
 
-func (eh *ErrorHandler) BadRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	eh.WriteError(w, r, http.StatusBadRequest, err.Error())
+func (eh *ErrorHandler) BadRequestResponse(c *gin.Context, err error) {
+	eh.WriteError(c, http.StatusBadRequest, err.Error())
 }
 
-func (eh *ErrorHandler) RateLimitExceededResponse(w http.ResponseWriter, r *http.Request) {
+func (eh *ErrorHandler) RateLimitExceededResponse(c *gin.Context) {
 	msg := "Request rate limit exceeded"
-	eh.WriteError(w, r, http.StatusTooManyRequests, msg)
+	eh.WriteError(c, http.StatusTooManyRequests, msg)
 }
 
-func (eh *ErrorHandler) FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
-	eh.WriteError(w, r, http.StatusBadRequest, errors)
+func (eh *ErrorHandler) FailedValidationResponse(c *gin.Context, errors map[string]string) {
+	eh.WriteError(c, http.StatusBadRequest, errors)
 }
 
-func (eh *ErrorHandler) UnauthorizedResponse(w http.ResponseWriter, r *http.Request) {
+func (eh *ErrorHandler) UnauthorizedResponse(c *gin.Context) {
 	msg := "Unauthorized access"
-	eh.WriteError(w, r, http.StatusUnauthorized, msg)
+	eh.WriteError(c, http.StatusUnauthorized, msg)
 }
 
-func (eh *ErrorHandler) InvalidCredentialsResponse(w http.ResponseWriter, r *http.Request) {
+func (eh *ErrorHandler) InvalidCredentialsResponse(c *gin.Context) {
 	msg := "Invalid authentication credentials"
-	eh.WriteError(w, r, http.StatusUnauthorized, msg)
+	eh.WriteError(c, http.StatusUnauthorized, msg)
 }

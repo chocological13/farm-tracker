@@ -7,11 +7,32 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
 	ErrInvalidUUID = errors.New("Invalid UUID format")
 )
+
+func ParseTimestampQueryParam(param string) (pgtype.Timestamp, error) {
+	if param == "" {
+		return pgtype.Timestamp{Valid: false}, nil // Allow empty values
+	}
+
+	parsedTime, err := time.Parse(time.RFC3339, param)
+	if err != nil {
+		return pgtype.Timestamp{}, err // Return error if format is incorrect
+	}
+
+	return pgtype.Timestamp{Time: parsedTime, Valid: true}, nil
+}
+
+func MakeNullTimestamp(t pgtype.Timestamp) pgtype.Timestamp {
+	if !t.Valid {
+		return pgtype.Timestamp{Valid: false} // This ensures NULL in SQL
+	}
+	return t
+}
 
 // ParseUUIDParam extracts and parses a UUID parameter from the URL
 func ParseUUIDParam(r *http.Request, prefix string) (pgtype.UUID, error) {
