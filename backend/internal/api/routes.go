@@ -9,5 +9,6 @@ func SetupRoutes(r *gin.Engine, packingRecordHandler *packing_record.PackingReco
 	api := r.Group("/api/v1")
 	{
 		api.GET("/records", packingRecordHandler.GetPackingRecords)
+		api.POST("/records", packingRecordHandler.CreatePackingRecord)
 	}
 }

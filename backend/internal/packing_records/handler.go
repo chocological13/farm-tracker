@@ -29,7 +29,7 @@ func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
 		}
 		input.TimeBegin = parsedTime
 	} else {
-		input.TimeBegin = pgtype.Timestamp{Valid: false} // Ensure NULL
+		input.TimeBegin = pgtype.Timestamp{Valid: false}
 	}
 
 	// Handle nullable "time_end" param
@@ -41,10 +41,9 @@ func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
 		}
 		input.TimeEnd = parsedTime
 	} else {
-		input.TimeEnd = pgtype.Timestamp{Valid: false} // Ensure NULL
+		input.TimeEnd = pgtype.Timestamp{Valid: false}
 	}
 
-	// Proceed with fetching records
 	records, err := h.service.GetPackingRecords(c, input)
 	if err != nil {
 		switch {
@@ -57,4 +56,29 @@ func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, util.Envelope{"packing_records": records})
+}
+
+func (h *PackingRecordHandler) CreatePackingRecord(c *gin.Context) {
+	var input CreatePackingRecordRequest
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
+		return
+	}
+
+	v := util.NewValidator()
+	ValidateInput(input, v)
+
+	if !v.Valid() {
+		util.GlobalErrorHandler.FailedValidationResponse(c, v.Errors)
+		return
+	}
+
+	newRecord, err := h.service.NewPackingRecord(c, input)
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, util.Envelope{"new_record": newRecord})
 }

@@ -44,6 +44,20 @@ func (s *PackingRecordService) GetPackingRecords(ctx context.Context,
 	return recordResponses, nil
 }
 
+func (s *PackingRecordService) NewPackingRecord(ctx context.Context, req CreatePackingRecordRequest) (*PackingRecordResponse, error) {
+	packingRecord, err := s.repository.NewPackingRecord(ctx, db.NewPackingRecordParams{
+		Datetime:     req.Datetime,
+		Pic:          req.Pic,
+		GrossWeight:  req.GrossWeight,
+		PackAQty:     req.PackAQty,
+		PackBQty:     req.PackBQty,
+		PackCQty:     req.PackCQty,
+		RejectWeight: req.RejectWeight,
+	})
+
+	return mapRecordFromDb(packingRecord), err
+}
+
 func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	return &PackingRecordResponse{
 		Datetime:     record.Datetime,
