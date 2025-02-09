@@ -16,7 +16,8 @@ const (
 )
 
 var (
-	ErrRecordNotFound = errors.New("Record not found")
+	ErrRecordNotFound   = errors.New("Record not found")
+	ErrInvalidTimeRange = errors.New("Invalid time range")
 )
 
 type PackingRecordService struct {
@@ -29,6 +30,10 @@ func NewPackingRecordService(repository *db.Queries) *PackingRecordService {
 
 func (s *PackingRecordService) GetPackingRecords(ctx context.Context,
 	req GetPackingRecordRequest) ([]*PackingRecordResponse, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	params := db.GetPackingRecordsParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -44,12 +49,7 @@ func (s *PackingRecordService) GetPackingRecords(ctx context.Context,
 		return nil, ErrRecordNotFound
 	}
 
-	recordResponses := make([]*PackingRecordResponse, len(packingRecords))
-	for i, packingRecord := range packingRecords {
-		recordResponses[i] = mapRecordFromDb(packingRecord)
-	}
-
-	return recordResponses, nil
+	return mapPackingRecords(packingRecords), nil
 }
 
 func (s *PackingRecordService) NewPackingRecord(ctx context.Context, req CreatePackingRecordRequest) (*PackingRecordResponse, error) {
@@ -68,6 +68,10 @@ func (s *PackingRecordService) NewPackingRecord(ctx context.Context, req CreateP
 
 func (s *PackingRecordService) GetHourlyPICMetrics(ctx context.Context,
 	req GetPackingRecordRequest) ([]*HourlyPICMetrics, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dbMetrics, err := s.repository.GetHourlyPICData(ctx, db.GetHourlyPICDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -80,20 +84,14 @@ func (s *PackingRecordService) GetHourlyPICMetrics(ctx context.Context,
 		return nil, ErrRecordNotFound
 	}
 
-	metrics := make([]*HourlyPICMetrics, len(dbMetrics))
-	for i, m := range dbMetrics {
-		metrics[i] = &HourlyPICMetrics{
-			Hour:        m.Hour,
-			Pic:         m.Pic,
-			GrossWeight: m.GrossWeight,
-			TotalPacks:  int32(m.TotalPacks),
-		}
-	}
-
-	return metrics, nil
+	return mapHourlyPICMetrics(dbMetrics), nil
 }
 
 func (s *PackingRecordService) GetHourlyPackData(ctx context.Context, req GetPackingRecordRequest) ([]*HourlyPackData, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dbMetrics, err := s.repository.GetHourlyPackData(ctx, db.GetHourlyPackDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -106,23 +104,14 @@ func (s *PackingRecordService) GetHourlyPackData(ctx context.Context, req GetPac
 		return nil, ErrRecordNotFound
 	}
 
-	metrics := make([]*HourlyPackData, len(dbMetrics))
-	for i, m := range dbMetrics {
-		metrics[i] = &HourlyPackData{
-			Hour:          m.Hour,
-			PackATotal:    int32(m.PackATotal),
-			PackBTotal:    int32(m.PackBTotal),
-			PackCTotal:    int32(m.PackCTotal),
-			PackAWeightKg: math.Round(PackAWeight*float64(m.PackATotal)*100) / 100,
-			PackBWeightKg: math.Round(PackBWeight*float64(m.PackBTotal)*100) / 100,
-			PackCWeightKg: math.Round(PackCWeight*float64(m.PackCTotal)*100) / 100,
-		}
-	}
-
-	return metrics, nil
+	return mapHourlyPackData(dbMetrics), nil
 }
 
 func (s *PackingRecordService) CalculateProductivity(ctx context.Context, req GetPackingRecordRequest) ([]*ProductivityMetrics, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	hourlyMetrics, err := s.GetHourlyPICMetrics(ctx, req)
 	if err != nil {
 		// other errors are already handled in the previous function
@@ -167,6 +156,10 @@ func (s *PackingRecordService) CalculateProductivity(ctx context.Context, req Ge
 func (s *PackingRecordService) CalculateHourlyRejectRatios(ctx context.Context,
 	req GetPackingRecordRequest) ([]*HourlyRejectRatioMetrics,
 	error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dbMetrics, err := s.repository.GetHourlyRejectRatio(ctx, db.GetHourlyRejectRatioParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -192,6 +185,10 @@ func (s *PackingRecordService) CalculateHourlyRejectRatios(ctx context.Context,
 
 func (s *PackingRecordService) CalculateDailyRejectRatios(ctx context.Context,
 	req GetPackingRecordRequest) ([]*DailyRejectRatioMetrics, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dbMetrics, err := s.repository.GetDailyRejectRatio(ctx, db.GetDailyRejectRatioParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -217,6 +214,10 @@ func (s *PackingRecordService) CalculateDailyRejectRatios(ctx context.Context,
 
 func (s *PackingRecordService) CalculateHourlyPackDistribution(ctx context.Context,
 	req GetPackingRecordRequest) ([]*HourlyPackDistributionMetrics, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dbMetrics, err := s.repository.GetHourlyPackData(ctx, db.GetHourlyPackDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -246,6 +247,10 @@ func (s *PackingRecordService) CalculateHourlyPackDistribution(ctx context.Conte
 }
 
 func (s *PackingRecordService) CalculateDailyPackDistribution(ctx context.Context, req GetPackingRecordRequest) ([]*DailyPackDistributionMetrics, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dbMetrics, err := s.repository.GetDailyPackData(ctx, db.GetDailyPackDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -274,6 +279,38 @@ func (s *PackingRecordService) CalculateDailyPackDistribution(ctx context.Contex
 	return metrics, nil
 }
 
+// helper methods
+
+func validateTimeRange(req GetPackingRecordRequest) error {
+	if !req.TimeBegin.Valid || !req.TimeEnd.Valid {
+		return ErrInvalidTimeRange
+	}
+	if req.TimeEnd.Time.Before(req.TimeBegin.Time) {
+		return ErrInvalidTimeRange
+	}
+	return nil
+}
+
+func calculatePackWeights(packA, packB, packC int64) (float64, float64, float64) {
+	return roundToTwoDecimals(PackAWeight * float64(packA)),
+		roundToTwoDecimals(PackBWeight * float64(packB)),
+		roundToTwoDecimals(PackCWeight * float64(packC))
+}
+
+func roundToTwoDecimals(value float64) float64 {
+	return math.Round(value*100) / 100
+}
+
+func calculateRatio(value, total float64) float64 {
+	if total == 0 {
+		return 0
+	}
+	ratio := (value / total) * 100
+	return math.Round(ratio*100) / 100
+}
+
+// mapping helpers
+
 func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	return &PackingRecordResponse{
 		Datetime:     record.Datetime,
@@ -286,10 +323,42 @@ func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	}
 }
 
-func calculateRatio(value, total float64) float64 {
-	if total == 0 {
-		return 0
+func mapPackingRecords(records []db.PackingRecord) []*PackingRecordResponse {
+	result := make([]*PackingRecordResponse, len(records))
+	for i, record := range records {
+		result[i] = mapRecordFromDb(record)
 	}
-	ratio := (value / total) * 100
-	return math.Round(ratio*100) / 100
+	return result
+}
+
+func mapHourlyPICMetrics(data []db.GetHourlyPICDataRow) []*HourlyPICMetrics {
+	metrics := make([]*HourlyPICMetrics, len(data))
+	for i, m := range data {
+		metrics[i] = &HourlyPICMetrics{
+			Hour:        m.Hour,
+			Pic:         m.Pic,
+			GrossWeight: m.GrossWeight,
+			TotalPacks:  int32(m.TotalPacks),
+		}
+	}
+	return metrics
+}
+
+func mapHourlyPackData(data []db.GetHourlyPackDataRow) []*HourlyPackData {
+	metrics := make([]*HourlyPackData, len(data))
+	for i, m := range data {
+		packAWeight, packBWeight, packCWeight := calculatePackWeights(
+			m.PackATotal, m.PackBTotal, m.PackCTotal)
+
+		metrics[i] = &HourlyPackData{
+			Hour:          m.Hour,
+			PackATotal:    int32(m.PackATotal),
+			PackBTotal:    int32(m.PackBTotal),
+			PackCTotal:    int32(m.PackCTotal),
+			PackAWeightKg: packAWeight,
+			PackBWeightKg: packBWeight,
+			PackCWeightKg: packCWeight,
+		}
+	}
+	return metrics
 }

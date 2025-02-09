@@ -80,7 +80,14 @@ type DailyPackDistributionMetrics struct {
 }
 
 func ValidateInput(req CreatePackingRecordRequest, v *util.Validator) map[string]string {
+
 	v.Check(!req.Datetime.Time.IsZero(), "datetime", "date time must not be empty")
+	v.Check(!req.Datetime.Time.IsZero(), "datetime", "datetime must not be empty")
 	v.Check(req.Pic != "", "pic", "pic name must not be empty")
+	v.Check(req.GrossWeight.Valid, "gross_weight", "gross weight must be valid")
+	v.Check(req.PackAQty >= 0, "pack_a_qty", "pack A quantity must be non-negative")
+	v.Check(req.PackBQty >= 0, "pack_b_qty", "pack B quantity must be non-negative")
+	v.Check(req.PackCQty >= 0, "pack_c_qty", "pack C quantity must be non-negative")
+
 	return v.Errors
 }

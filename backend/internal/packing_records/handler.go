@@ -16,16 +16,7 @@ func NewPackingRecordHandler(service *PackingRecordService) *PackingRecordHandle
 }
 
 func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.ServerErrorResponse(c, err)
 		return
@@ -33,12 +24,7 @@ func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
 
 	records, err := h.service.GetPackingRecords(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -71,29 +57,15 @@ func (h *PackingRecordHandler) CreatePackingRecord(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyPICMetrics(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
 	metrics, err := h.service.GetHourlyPICMetrics(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -101,29 +73,15 @@ func (h *PackingRecordHandler) GetHourlyPICMetrics(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyPackData(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
 	metrics, err := h.service.GetHourlyPackData(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -132,29 +90,15 @@ func (h *PackingRecordHandler) GetHourlyPackData(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetProductivityMetrics(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
 	metrics, err := h.service.CalculateProductivity(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -163,29 +107,15 @@ func (h *PackingRecordHandler) GetProductivityMetrics(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyRejectRatios(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
 	metrics, err := h.service.CalculateHourlyRejectRatios(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -193,29 +123,15 @@ func (h *PackingRecordHandler) GetHourlyRejectRatios(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetDailyRejectRatios(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
 	metrics, err := h.service.CalculateDailyRejectRatios(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -223,29 +139,15 @@ func (h *PackingRecordHandler) GetDailyRejectRatios(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
 	metrics, err := h.service.CalculateHourlyPackDistribution(c, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecordNotFound):
-			util.GlobalErrorHandler.NotFoundResponse(c)
-		default:
-			util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		}
+		h.handleError(c, err)
 		return
 	}
 
@@ -253,18 +155,9 @@ func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetDailyPackDistribution(c *gin.Context) {
-	var input GetPackingRecordRequest
-	var err error
-
-	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	input, err := h.parseTimeParams(c)
 	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
-		return
-	}
-
-	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
-	if err != nil {
-		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
 	}
 
@@ -280,4 +173,28 @@ func (h *PackingRecordHandler) GetDailyPackDistribution(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
+}
+
+// Helper function to parse time parameters
+func (h *PackingRecordHandler) parseTimeParams(c *gin.Context) (GetPackingRecordRequest, error) {
+	var input GetPackingRecordRequest
+	var err error
+
+	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	if err != nil {
+		return input, err
+	}
+
+	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	return input, err
+}
+
+// Helper function to handle common error responses
+func (h *PackingRecordHandler) handleError(c *gin.Context, err error) {
+	switch {
+	case errors.Is(err, ErrRecordNotFound):
+		util.GlobalErrorHandler.NotFoundResponse(c)
+	default:
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+	}
 }
