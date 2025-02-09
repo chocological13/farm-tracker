@@ -37,6 +37,16 @@ type HourlyPICMetrics struct {
 	TotalPacks  int32            `json:"total_packs"`
 }
 
+type HourlyPackData struct {
+	Hour          pgtype.Timestamp `json:"hour"`
+	PackATotal    int32            `json:"pack_a_total"`
+	PackBTotal    int32            `json:"pack_b_total"`
+	PackCTotal    int32            `json:"pack_c_total"`
+	PackAWeightKg float64          `json:"pack_a_weight"`
+	PackBWeightKg float64          `json:"pack_b_weight"`
+	PackCWeightKg float64          `json:"pack_c_weight"`
+}
+
 func ValidateInput(req CreatePackingRecordRequest, v *util.Validator) map[string]string {
 	v.Check(!req.Datetime.Time.IsZero(), "datetime", "date time must not be empty")
 	v.Check(req.Pic != "", "pic", "pic name must not be empty")

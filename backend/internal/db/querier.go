@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	GetHourlyPICData(ctx context.Context, arg GetHourlyPICDataParams) ([]GetHourlyPICDataRow, error)
+	GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataParams) ([]GetHourlyPackDataRow, error)
 	GetPackingRecords(ctx context.Context, arg GetPackingRecordsParams) ([]PackingRecord, error)
 	NewPackingRecord(ctx context.Context, arg NewPackingRecordParams) (PackingRecord, error)
 }

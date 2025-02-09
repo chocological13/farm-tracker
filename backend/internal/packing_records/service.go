@@ -5,6 +5,13 @@ import (
 	"github.com/chocological13/farm-tracker/internal/db"
 	"github.com/chocological13/farm-tracker/internal/util"
 	"golang.org/x/net/context"
+	"math"
+)
+
+const (
+	PackAWeight = 0.20
+	PackBWeight = 0.30
+	PackCWeight = 0.40
 )
 
 var (
@@ -79,6 +86,35 @@ func (s *PackingRecordService) GetHourlyPICMetrics(ctx context.Context,
 			PIC:         m.Pic,
 			GrossWeight: m.GrossWeight,
 			TotalPacks:  int32(m.TotalPacks),
+		}
+	}
+
+	return metrics, nil
+}
+
+func (s *PackingRecordService) GetHourlyPackData(ctx context.Context, req GetPackingRecordRequest) ([]*HourlyPackData, error) {
+	dbMetrics, err := s.repository.GetHourlyPackData(ctx, db.GetHourlyPackDataParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(dbMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	metrics := make([]*HourlyPackData, len(dbMetrics))
+	for i, m := range dbMetrics {
+		metrics[i] = &HourlyPackData{
+			Hour:          m.Hour,
+			PackATotal:    int32(m.PackATotal),
+			PackBTotal:    int32(m.PackBTotal),
+			PackCTotal:    int32(m.PackCTotal),
+			PackAWeightKg: math.Round(PackAWeight*float64(m.PackATotal)*100) / 100,
+			PackBWeightKg: math.Round(PackBWeight*float64(m.PackBTotal)*100) / 100,
+			PackCWeightKg: math.Round(PackCWeight*float64(m.PackCTotal)*100) / 100,
 		}
 	}
 

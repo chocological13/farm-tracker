@@ -20,4 +20,17 @@ SELECT
 FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
-GROUP BY hour, pic;
+GROUP BY hour, pic
+ORDER BY hour;
+
+-- name: GetHourlyPackData :many
+SELECT
+    date_trunc('hour', datetime)::TIMESTAMP as hour,
+    SUM(pack_a_qty) as pack_a_total,
+    SUM(pack_b_qty) as pack_b_total,
+    SUM(pack_c_qty) as pack_c_total
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY hour
+ORDER BY hour;

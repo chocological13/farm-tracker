@@ -21,6 +21,7 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour, pic
+ORDER BY hour
 `
 
 type GetHourlyPICDataParams struct {
@@ -49,6 +50,56 @@ func (q *Queries) GetHourlyPICData(ctx context.Context, arg GetHourlyPICDataPara
 			&i.Pic,
 			&i.GrossWeight,
 			&i.TotalPacks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getHourlyPackData = `-- name: GetHourlyPackData :many
+SELECT
+    date_trunc('hour', datetime)::TIMESTAMP as hour,
+    SUM(pack_a_qty) as pack_a_total,
+    SUM(pack_b_qty) as pack_b_total,
+    SUM(pack_c_qty) as pack_c_total
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY hour
+ORDER BY hour
+`
+
+type GetHourlyPackDataParams struct {
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
+}
+
+type GetHourlyPackDataRow struct {
+	Hour       pgtype.Timestamp `json:"hour"`
+	PackATotal int64            `json:"pack_a_total"`
+	PackBTotal int64            `json:"pack_b_total"`
+	PackCTotal int64            `json:"pack_c_total"`
+}
+
+func (q *Queries) GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataParams) ([]GetHourlyPackDataRow, error) {
+	rows, err := q.db.Query(ctx, getHourlyPackData, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetHourlyPackDataRow{}
+	for rows.Next() {
+		var i GetHourlyPackDataRow
+		if err := rows.Scan(
+			&i.Hour,
+			&i.PackATotal,
+			&i.PackBTotal,
+			&i.PackCTotal,
 		); err != nil {
 			return nil, err
 		}
