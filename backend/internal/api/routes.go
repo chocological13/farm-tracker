@@ -15,7 +15,7 @@ func SetupRoutes(r *gin.Engine, packingRecordHandler *packing_record.PackingReco
 		api.GET("/productivity", packingRecordHandler.GetProductivityMetrics)
 		api.GET("/reject-ratios/hourly", packingRecordHandler.GetHourlyRejectRatios)
 		api.GET("/reject-ratios/daily", packingRecordHandler.GetDailyRejectRatios)
-		api.GET("/distribution/hourly", packingRecordHandler.GetHourlyPackDistribution)
-		api.GET("/distribution/daily", packingRecordHandler.GetDailyPackDistribution)
+		api.GET("/distributions/hourly", packingRecordHandler.GetHourlyPackDistribution)
+		api.GET("/distributions/daily", packingRecordHandler.GetDailyPackDistribution)
 	}
 }
