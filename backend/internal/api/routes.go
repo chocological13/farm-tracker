@@ -6,12 +6,14 @@ import (
 )
 
 func SetupRoutes(r *gin.Engine, packingRecordHandler *packing_record.PackingRecordHandler) {
-	api := r.Group("/api/v1")
+	api := r.Group("/api/v1/records")
 	{
-		api.GET("/records", packingRecordHandler.GetPackingRecords)
-		api.POST("/records", packingRecordHandler.CreatePackingRecord)
-		api.GET("/records/hourly-pic", packingRecordHandler.GetHourlyPICMetrics)
-		api.GET("/records/hourly-distribution", packingRecordHandler.GetHourlyPackDistribution)
-		api.GET("records/productivity", packingRecordHandler.GetProductivityMetrics)
+		api.GET("", packingRecordHandler.GetPackingRecords)
+		api.POST("", packingRecordHandler.CreatePackingRecord)
+		api.GET("/hourly-pic", packingRecordHandler.GetHourlyPICMetrics)
+		api.GET("/hourly-distribution", packingRecordHandler.GetHourlyPackDistribution)
+		api.GET("/productivity", packingRecordHandler.GetProductivityMetrics)
+		api.GET("/reject-ratios/hourly", packingRecordHandler.GetHourlyRejectRatios)
+		api.GET("/reject-ratios/daily", packingRecordHandler.GetDailyRejectRatios)
 	}
 }

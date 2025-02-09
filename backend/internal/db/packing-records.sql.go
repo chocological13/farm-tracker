@@ -13,10 +13,10 @@ import (
 
 const getDailyPICData = `-- name: GetDailyPICData :many
 SELECT
-    date_trunc('day', datetime)::TIMESTAMP as day,
-    pic,
-    SUM(gross_weight)::NUMERIC as gross_weight,
-    SUM(pack_a_qty + pack_b_qty + pack_c_qty) as daily_packs
+  date_trunc('day', datetime)::TIMESTAMP as day,
+  pic,
+  SUM(gross_weight)::NUMERIC as gross_weight,
+  SUM(pack_a_qty + pack_b_qty + pack_c_qty) as daily_packs
 FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
@@ -61,12 +61,55 @@ func (q *Queries) GetDailyPICData(ctx context.Context, arg GetDailyPICDataParams
 	return items, nil
 }
 
+const getDailyRejectRatio = `-- name: GetDailyRejectRatio :many
+SELECT
+  date_trunc('day', datetime)::TIMESTAMP as day,
+  SUM(reject_weight)::DOUBLE PRECISION as total_reject_weight,
+  SUM(gross_weight)::DOUBLE PRECISION as total_gross_weight
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY day
+ORDER BY day
+`
+
+type GetDailyRejectRatioParams struct {
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
+}
+
+type GetDailyRejectRatioRow struct {
+	Day               pgtype.Timestamp `json:"day"`
+	TotalRejectWeight float64          `json:"total_reject_weight"`
+	TotalGrossWeight  float64          `json:"total_gross_weight"`
+}
+
+func (q *Queries) GetDailyRejectRatio(ctx context.Context, arg GetDailyRejectRatioParams) ([]GetDailyRejectRatioRow, error) {
+	rows, err := q.db.Query(ctx, getDailyRejectRatio, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetDailyRejectRatioRow{}
+	for rows.Next() {
+		var i GetDailyRejectRatioRow
+		if err := rows.Scan(&i.Day, &i.TotalRejectWeight, &i.TotalGrossWeight); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getHourlyPICData = `-- name: GetHourlyPICData :many
 SELECT
-    date_trunc('hour', datetime)::TIMESTAMP as hour,
-    pic,
-    SUM(gross_weight)::NUMERIC as gross_weight,
-    SUM(pack_a_qty + pack_b_qty + pack_c_qty) as total_packs
+  date_trunc('hour', datetime)::TIMESTAMP as hour,
+  pic,
+  SUM(gross_weight)::NUMERIC as gross_weight,
+  SUM(pack_a_qty + pack_b_qty + pack_c_qty) as total_packs
 FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
@@ -113,10 +156,10 @@ func (q *Queries) GetHourlyPICData(ctx context.Context, arg GetHourlyPICDataPara
 
 const getHourlyPackData = `-- name: GetHourlyPackData :many
 SELECT
-    date_trunc('hour', datetime)::TIMESTAMP as hour,
-    SUM(pack_a_qty) as pack_a_total,
-    SUM(pack_b_qty) as pack_b_total,
-    SUM(pack_c_qty) as pack_c_total
+  date_trunc('hour', datetime)::TIMESTAMP as hour,
+  SUM(pack_a_qty) as pack_a_total,
+  SUM(pack_b_qty) as pack_b_total,
+  SUM(pack_c_qty) as pack_c_total
 FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
@@ -151,6 +194,49 @@ func (q *Queries) GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataPa
 			&i.PackBTotal,
 			&i.PackCTotal,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getHourlyRejectRatio = `-- name: GetHourlyRejectRatio :many
+SELECT
+  date_trunc('hour', datetime)::TIMESTAMP as hour,
+  SUM(reject_weight)::DOUBLE PRECISION as total_reject_weight,
+  SUM(gross_weight)::DOUBLE PRECISION as total_gross_weight
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY hour
+ORDER BY hour
+`
+
+type GetHourlyRejectRatioParams struct {
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
+}
+
+type GetHourlyRejectRatioRow struct {
+	Hour              pgtype.Timestamp `json:"hour"`
+	TotalRejectWeight float64          `json:"total_reject_weight"`
+	TotalGrossWeight  float64          `json:"total_gross_weight"`
+}
+
+func (q *Queries) GetHourlyRejectRatio(ctx context.Context, arg GetHourlyRejectRatioParams) ([]GetHourlyRejectRatioRow, error) {
+	rows, err := q.db.Query(ctx, getHourlyRejectRatio, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetHourlyRejectRatioRow{}
+	for rows.Next() {
+		var i GetHourlyRejectRatioRow
+		if err := rows.Scan(&i.Hour, &i.TotalRejectWeight, &i.TotalGrossWeight); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -164,6 +164,57 @@ func (s *PackingRecordService) CalculateProductivity(ctx context.Context, req Ge
 	return metrics, nil
 }
 
+func (s *PackingRecordService) CalculateHourlyRejectRatios(ctx context.Context,
+	req GetPackingRecordRequest) ([]*HourlyRejectRatioMetrics,
+	error) {
+	dbMetrics, err := s.repository.GetHourlyRejectRatio(ctx, db.GetHourlyRejectRatioParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(dbMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	metrics := make([]*HourlyRejectRatioMetrics, len(dbMetrics))
+	for i, m := range dbMetrics {
+		ratio := calculateRatio(m.TotalRejectWeight, m.TotalGrossWeight)
+		metrics[i] = &HourlyRejectRatioMetrics{
+			Hour:              m.Hour,
+			HourlyRejectRatio: ratio,
+		}
+	}
+
+	return metrics, nil
+}
+
+func (s *PackingRecordService) CalculateDailyRejectRatios(ctx context.Context,
+	req GetPackingRecordRequest) ([]*DailyRejectRatioMetrics, error) {
+	dbMetrics, err := s.repository.GetDailyRejectRatio(ctx, db.GetDailyRejectRatioParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(dbMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	metrics := make([]*DailyRejectRatioMetrics, len(dbMetrics))
+	for i, m := range dbMetrics {
+		ratio := calculateRatio(m.TotalGrossWeight, m.TotalRejectWeight)
+		metrics[i] = &DailyRejectRatioMetrics{
+			Day:              m.Day,
+			DailyRejectRatio: ratio,
+		}
+	}
+
+	return metrics, nil
+}
+
 func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	return &PackingRecordResponse{
 		Datetime:     record.Datetime,
@@ -174,4 +225,11 @@ func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 		PackCQty:     record.PackCQty,
 		RejectWeight: record.RejectWeight,
 	}
+}
+
+func calculateRatio(reject, gross float64) float64 {
+	if gross == 0 {
+		return 0
+	}
+	return (reject / gross) * 100
 }

@@ -53,6 +53,16 @@ type ProductivityMetrics struct {
 	DailyAverage   float64 `json:"daily_average"`
 }
 
+type HourlyRejectRatioMetrics struct {
+	Hour              pgtype.Timestamp `json:"hour"`
+	HourlyRejectRatio float64          `json:"hourly_reject_ratio"`
+}
+
+type DailyRejectRatioMetrics struct {
+	Day              pgtype.Timestamp `json:"day"`
+	DailyRejectRatio float64          `json:"daily_reject_ratio"`
+}
+
 func ValidateInput(req CreatePackingRecordRequest, v *util.Validator) map[string]string {
 	v.Check(!req.Datetime.Time.IsZero(), "datetime", "date time must not be empty")
 	v.Check(req.Pic != "", "pic", "pic name must not be empty")
