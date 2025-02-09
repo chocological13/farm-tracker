@@ -12,5 +12,6 @@ func SetupRoutes(r *gin.Engine, packingRecordHandler *packing_record.PackingReco
 		api.POST("/records", packingRecordHandler.CreatePackingRecord)
 		api.GET("/records/hourly-pic", packingRecordHandler.GetHourlyPICMetrics)
 		api.GET("/records/hourly-distribution", packingRecordHandler.GetHourlyPackDistribution)
+		api.GET("records/productivity", packingRecordHandler.GetProductivityMetrics)
 	}
 }

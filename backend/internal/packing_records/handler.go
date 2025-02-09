@@ -130,3 +130,34 @@ func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
 	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
 
 }
+
+func (h *PackingRecordHandler) GetProductivityMetrics(c *gin.Context) {
+	var input GetPackingRecordRequest
+	var err error
+
+	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	metrics, err := h.service.CalculateProductivity(c, input)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrRecordNotFound):
+			util.GlobalErrorHandler.NotFoundResponse(c)
+		default:
+			util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
+
+}

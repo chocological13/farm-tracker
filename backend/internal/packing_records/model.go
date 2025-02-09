@@ -32,7 +32,7 @@ type CreatePackingRecordRequest struct {
 
 type HourlyPICMetrics struct {
 	Hour        pgtype.Timestamp `json:"hour"`
-	PIC         string           `json:"pic"`
+	Pic         string           `json:"pic"`
 	GrossWeight pgtype.Numeric   `json:"gross_weight"`
 	TotalPacks  int32            `json:"total_packs"`
 }
@@ -45,6 +45,12 @@ type HourlyPackData struct {
 	PackAWeightKg float64          `json:"pack_a_weight"`
 	PackBWeightKg float64          `json:"pack_b_weight"`
 	PackCWeightKg float64          `json:"pack_c_weight"`
+}
+
+type ProductivityMetrics struct {
+	Pic            string  `json:"pic"`
+	PacksPerMinute float64 `json:"packs_per_minute"`
+	DailyAverage   float64 `json:"daily_average"`
 }
 
 func ValidateInput(req CreatePackingRecordRequest, v *util.Validator) map[string]string {

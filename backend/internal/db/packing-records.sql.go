@@ -11,6 +11,56 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getDailyPICData = `-- name: GetDailyPICData :many
+SELECT
+    date_trunc('day', datetime)::TIMESTAMP as day,
+    pic,
+    SUM(gross_weight)::NUMERIC as gross_weight,
+    SUM(pack_a_qty + pack_b_qty + pack_c_qty) as daily_packs
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY day, pic
+ORDER BY day
+`
+
+type GetDailyPICDataParams struct {
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
+}
+
+type GetDailyPICDataRow struct {
+	Day         pgtype.Timestamp `json:"day"`
+	Pic         string           `json:"pic"`
+	GrossWeight pgtype.Numeric   `json:"gross_weight"`
+	DailyPacks  int64            `json:"daily_packs"`
+}
+
+func (q *Queries) GetDailyPICData(ctx context.Context, arg GetDailyPICDataParams) ([]GetDailyPICDataRow, error) {
+	rows, err := q.db.Query(ctx, getDailyPICData, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetDailyPICDataRow{}
+	for rows.Next() {
+		var i GetDailyPICDataRow
+		if err := rows.Scan(
+			&i.Day,
+			&i.Pic,
+			&i.GrossWeight,
+			&i.DailyPacks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getHourlyPICData = `-- name: GetHourlyPICData :many
 SELECT
     date_trunc('hour', datetime)::TIMESTAMP as hour,

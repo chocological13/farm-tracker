@@ -6,6 +6,7 @@ import (
 	"github.com/chocological13/farm-tracker/internal/util"
 	"golang.org/x/net/context"
 	"math"
+	"time"
 )
 
 const (
@@ -83,7 +84,7 @@ func (s *PackingRecordService) GetHourlyPICMetrics(ctx context.Context,
 	for i, m := range dbMetrics {
 		metrics[i] = &HourlyPICMetrics{
 			Hour:        m.Hour,
-			PIC:         m.Pic,
+			Pic:         m.Pic,
 			GrossWeight: m.GrossWeight,
 			TotalPacks:  int32(m.TotalPacks),
 		}
@@ -115,6 +116,48 @@ func (s *PackingRecordService) GetHourlyPackData(ctx context.Context, req GetPac
 			PackAWeightKg: math.Round(PackAWeight*float64(m.PackATotal)*100) / 100,
 			PackBWeightKg: math.Round(PackBWeight*float64(m.PackBTotal)*100) / 100,
 			PackCWeightKg: math.Round(PackCWeight*float64(m.PackCTotal)*100) / 100,
+		}
+	}
+
+	return metrics, nil
+}
+
+func (s *PackingRecordService) CalculateProductivity(ctx context.Context, req GetPackingRecordRequest) ([]*ProductivityMetrics, error) {
+	hourlyMetrics, err := s.GetHourlyPICMetrics(ctx, req)
+	if err != nil {
+		// other errors are already handled in the previous function
+		return nil, err
+	}
+
+	dailyMetrics, err := s.repository.GetDailyPICData(ctx, db.GetDailyPICDataParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(dailyMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	// Map for daily totals for quick lookup
+	dailyTotals := make(map[string]map[time.Time]int64)
+	for _, d := range dailyMetrics {
+		if _, ok := dailyTotals[d.Pic]; !ok {
+			dailyTotals[d.Pic] = make(map[time.Time]int64)
+		}
+		dailyTotals[d.Pic][d.Day.Time] = d.DailyPacks
+	}
+
+	metrics := make([]*ProductivityMetrics, len(hourlyMetrics))
+	for i, m := range hourlyMetrics {
+		day := m.Hour.Time.Truncate(24 * time.Hour)
+		dailyPacks := dailyTotals[m.Pic][day]
+
+		metrics[i] = &ProductivityMetrics{
+			Pic:            m.Pic,
+			PacksPerMinute: math.Round((float64(m.TotalPacks)/60.0)*100) / 100,
+			DailyAverage:   math.Round((float64(dailyPacks)/(10*60.0))*100) / 100,
 		}
 	}
 
