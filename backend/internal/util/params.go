@@ -16,12 +16,12 @@ var (
 
 func ParseTimestampQueryParam(param string) (pgtype.Timestamp, error) {
 	if param == "" {
-		return pgtype.Timestamp{Valid: false}, nil // Allow empty values
+		return pgtype.Timestamp{Valid: false}, nil
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, param)
 	if err != nil {
-		return pgtype.Timestamp{}, err // Return error if format is incorrect
+		return pgtype.Timestamp{}, err
 	}
 
 	return pgtype.Timestamp{Time: parsedTime, Valid: true}, nil

@@ -58,6 +58,33 @@ func (s *PackingRecordService) NewPackingRecord(ctx context.Context, req CreateP
 	return mapRecordFromDb(packingRecord), err
 }
 
+func (s *PackingRecordService) GetHourlyPICMetrics(ctx context.Context,
+	req GetPackingRecordRequest) ([]*HourlyPICMetrics, error) {
+	dbMetrics, err := s.repository.GetHourlyPICData(ctx, db.GetHourlyPICDataParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(dbMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	metrics := make([]*HourlyPICMetrics, len(dbMetrics))
+	for i, m := range dbMetrics {
+		metrics[i] = &HourlyPICMetrics{
+			Hour:        m.Hour,
+			PIC:         m.Pic,
+			GrossWeight: m.GrossWeight,
+			TotalPacks:  int32(m.TotalPacks),
+		}
+	}
+
+	return metrics, nil
+}
+
 func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	return &PackingRecordResponse{
 		Datetime:     record.Datetime,

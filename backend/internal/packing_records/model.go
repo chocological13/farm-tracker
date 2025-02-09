@@ -30,6 +30,13 @@ type CreatePackingRecordRequest struct {
 	RejectWeight pgtype.Numeric   `json:"reject_weight"`
 }
 
+type HourlyPICMetrics struct {
+	Hour        pgtype.Timestamp `json:"hour"`
+	PIC         string           `json:"pic"`
+	GrossWeight pgtype.Numeric   `json:"gross_weight"`
+	TotalPacks  int32            `json:"total_packs"`
+}
+
 func ValidateInput(req CreatePackingRecordRequest, v *util.Validator) map[string]string {
 	v.Check(!req.Datetime.Time.IsZero(), "datetime", "date time must not be empty")
 	v.Check(req.Pic != "", "pic", "pic name must not be empty")

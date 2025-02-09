@@ -11,6 +11,55 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getHourlyPICData = `-- name: GetHourlyPICData :many
+SELECT
+    date_trunc('hour', datetime)::TIMESTAMP as hour,
+    pic,
+    SUM(gross_weight)::NUMERIC as gross_weight,
+    SUM(pack_a_qty + pack_b_qty + pack_c_qty) as total_packs
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY hour, pic
+`
+
+type GetHourlyPICDataParams struct {
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
+}
+
+type GetHourlyPICDataRow struct {
+	Hour        pgtype.Timestamp `json:"hour"`
+	Pic         string           `json:"pic"`
+	GrossWeight pgtype.Numeric   `json:"gross_weight"`
+	TotalPacks  int64            `json:"total_packs"`
+}
+
+func (q *Queries) GetHourlyPICData(ctx context.Context, arg GetHourlyPICDataParams) ([]GetHourlyPICDataRow, error) {
+	rows, err := q.db.Query(ctx, getHourlyPICData, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetHourlyPICDataRow{}
+	for rows.Next() {
+		var i GetHourlyPICDataRow
+		if err := rows.Scan(
+			&i.Hour,
+			&i.Pic,
+			&i.GrossWeight,
+			&i.TotalPacks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPackingRecords = `-- name: GetPackingRecords :many
 SELECT id, datetime, pic, gross_weight, pack_a_qty, pack_b_qty, pack_c_qty, reject_weight, created_at
 FROM packing_records

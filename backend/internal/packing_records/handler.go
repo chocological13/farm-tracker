@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/chocological13/farm-tracker/internal/util"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgtype"
 	"net/http"
 )
 
@@ -20,28 +19,16 @@ func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
 	var input GetPackingRecordRequest
 	var err error
 
-	// Handle nullable "time_begin" param
-	if timeBeginStr := c.Query("time_begin"); timeBeginStr != "" {
-		parsedTime, err := util.ParseTimestampQueryParam(timeBeginStr)
-		if err != nil {
-			util.GlobalErrorHandler.BadRequestResponse(c, err)
-			return
-		}
-		input.TimeBegin = parsedTime
-	} else {
-		input.TimeBegin = pgtype.Timestamp{Valid: false}
+	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
 	}
 
-	// Handle nullable "time_end" param
-	if timeEndStr := c.Query("time_end"); timeEndStr != "" {
-		parsedTime, err := util.ParseTimestampQueryParam(timeEndStr)
-		if err != nil {
-			util.GlobalErrorHandler.BadRequestResponse(c, err)
-			return
-		}
-		input.TimeEnd = parsedTime
-	} else {
-		input.TimeEnd = pgtype.Timestamp{Valid: false}
+	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
 	}
 
 	records, err := h.service.GetPackingRecords(c, input)
@@ -81,4 +68,29 @@ func (h *PackingRecordHandler) CreatePackingRecord(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, util.Envelope{"new_record": newRecord})
+}
+
+func (h *PackingRecordHandler) GetHourlyPICMetrics(c *gin.Context) {
+	var input GetPackingRecordRequest
+	var err error
+
+	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	metrics, err := h.service.GetHourlyPICMetrics(c, input)
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
 }
