@@ -11,9 +11,11 @@ func SetupRoutes(r *gin.Engine, packingRecordHandler *packing_record.PackingReco
 		api.GET("", packingRecordHandler.GetPackingRecords)
 		api.POST("", packingRecordHandler.CreatePackingRecord)
 		api.GET("/hourly-pic", packingRecordHandler.GetHourlyPICMetrics)
-		api.GET("/hourly-distribution", packingRecordHandler.GetHourlyPackDistribution)
+		api.GET("/hourly-pack-data", packingRecordHandler.GetHourlyPackData)
 		api.GET("/productivity", packingRecordHandler.GetProductivityMetrics)
 		api.GET("/reject-ratios/hourly", packingRecordHandler.GetHourlyRejectRatios)
 		api.GET("/reject-ratios/daily", packingRecordHandler.GetDailyRejectRatios)
+		api.GET("/distribution/hourly", packingRecordHandler.GetHourlyPackDistribution)
+		api.GET("/distribution/daily", packingRecordHandler.GetDailyPackDistribution)
 	}
 }

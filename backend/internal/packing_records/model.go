@@ -63,6 +63,22 @@ type DailyRejectRatioMetrics struct {
 	DailyRejectRatio float64          `json:"daily_reject_ratio"`
 }
 
+type HourlyPackDistributionMetrics struct {
+	Hour       pgtype.Timestamp `json:"hour"`
+	PackARatio float64          `json:"pack_a_ratio"`
+	PackBRatio float64          `json:"pack_b_ratio"`
+	PackCRatio float64          `json:"pack_c_ratio"`
+	TotalPacks int32            `json:"total_packs"`
+}
+
+type DailyPackDistributionMetrics struct {
+	Day        pgtype.Timestamp `json:"day"`
+	PackARatio float64          `json:"pack_a_ratio"`
+	PackBRatio float64          `json:"pack_b_ratio"`
+	PackCRatio float64          `json:"pack_c_ratio"`
+	TotalPacks int32            `json:"total_packs"`
+}
+
 func ValidateInput(req CreatePackingRecordRequest, v *util.Validator) map[string]string {
 	v.Check(!req.Datetime.Time.IsZero(), "datetime", "date time must not be empty")
 	v.Check(req.Pic != "", "pic", "pic name must not be empty")

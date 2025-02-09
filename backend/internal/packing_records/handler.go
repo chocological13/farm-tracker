@@ -100,7 +100,7 @@ func (h *PackingRecordHandler) GetHourlyPICMetrics(c *gin.Context) {
 	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
 }
 
-func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
+func (h *PackingRecordHandler) GetHourlyPackData(c *gin.Context) {
 	var input GetPackingRecordRequest
 	var err error
 
@@ -209,6 +209,66 @@ func (h *PackingRecordHandler) GetDailyRejectRatios(c *gin.Context) {
 	}
 
 	metrics, err := h.service.CalculateDailyRejectRatios(c, input)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrRecordNotFound):
+			util.GlobalErrorHandler.NotFoundResponse(c)
+		default:
+			util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
+}
+
+func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
+	var input GetPackingRecordRequest
+	var err error
+
+	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	metrics, err := h.service.CalculateHourlyPackDistribution(c, input)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrRecordNotFound):
+			util.GlobalErrorHandler.NotFoundResponse(c)
+		default:
+			util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
+}
+
+func (h *PackingRecordHandler) GetDailyPackDistribution(c *gin.Context) {
+	var input GetPackingRecordRequest
+	var err error
+
+	input.TimeBegin, err = util.ParseTimestampQueryParam(c.Query("time_begin"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	if err != nil {
+		util.GlobalErrorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	metrics, err := h.service.CalculateDailyPackDistribution(c, input)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrRecordNotFound):

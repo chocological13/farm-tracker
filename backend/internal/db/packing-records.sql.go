@@ -61,6 +61,59 @@ func (q *Queries) GetDailyPICData(ctx context.Context, arg GetDailyPICDataParams
 	return items, nil
 }
 
+const getDailyPackData = `-- name: GetDailyPackData :many
+SELECT
+  date_trunc('day', datetime)::TIMESTAMP as day,
+  SUM(pack_a_qty) as pack_a_total,
+  SUM(pack_b_qty) as pack_b_total,
+  SUM(pack_c_qty) as pack_c_total,
+  SUM(pack_a_qty + pack_b_qty + pack_c_qty) as total_packs
+FROM packing_records
+WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
+  AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
+GROUP BY day
+ORDER BY day
+`
+
+type GetDailyPackDataParams struct {
+	Column1 pgtype.Timestamp `json:"column_1"`
+	Column2 pgtype.Timestamp `json:"column_2"`
+}
+
+type GetDailyPackDataRow struct {
+	Day        pgtype.Timestamp `json:"day"`
+	PackATotal int64            `json:"pack_a_total"`
+	PackBTotal int64            `json:"pack_b_total"`
+	PackCTotal int64            `json:"pack_c_total"`
+	TotalPacks int64            `json:"total_packs"`
+}
+
+func (q *Queries) GetDailyPackData(ctx context.Context, arg GetDailyPackDataParams) ([]GetDailyPackDataRow, error) {
+	rows, err := q.db.Query(ctx, getDailyPackData, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetDailyPackDataRow{}
+	for rows.Next() {
+		var i GetDailyPackDataRow
+		if err := rows.Scan(
+			&i.Day,
+			&i.PackATotal,
+			&i.PackBTotal,
+			&i.PackCTotal,
+			&i.TotalPacks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getDailyRejectRatio = `-- name: GetDailyRejectRatio :many
 SELECT
   date_trunc('day', datetime)::TIMESTAMP as day,
@@ -159,7 +212,8 @@ SELECT
   date_trunc('hour', datetime)::TIMESTAMP as hour,
   SUM(pack_a_qty) as pack_a_total,
   SUM(pack_b_qty) as pack_b_total,
-  SUM(pack_c_qty) as pack_c_total
+  SUM(pack_c_qty) as pack_c_total,
+  SUM(pack_a_qty + pack_b_qty + pack_c_qty) as total_packs
 FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
@@ -177,6 +231,7 @@ type GetHourlyPackDataRow struct {
 	PackATotal int64            `json:"pack_a_total"`
 	PackBTotal int64            `json:"pack_b_total"`
 	PackCTotal int64            `json:"pack_c_total"`
+	TotalPacks int64            `json:"total_packs"`
 }
 
 func (q *Queries) GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataParams) ([]GetHourlyPackDataRow, error) {
@@ -193,6 +248,7 @@ func (q *Queries) GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataPa
 			&i.PackATotal,
 			&i.PackBTotal,
 			&i.PackCTotal,
+			&i.TotalPacks,
 		); err != nil {
 			return nil, err
 		}

@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	GetDailyPICData(ctx context.Context, arg GetDailyPICDataParams) ([]GetDailyPICDataRow, error)
+	GetDailyPackData(ctx context.Context, arg GetDailyPackDataParams) ([]GetDailyPackDataRow, error)
 	GetDailyRejectRatio(ctx context.Context, arg GetDailyRejectRatioParams) ([]GetDailyRejectRatioRow, error)
 	GetHourlyPICData(ctx context.Context, arg GetHourlyPICDataParams) ([]GetHourlyPICDataRow, error)
 	GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataParams) ([]GetHourlyPackDataRow, error)

@@ -215,6 +215,65 @@ func (s *PackingRecordService) CalculateDailyRejectRatios(ctx context.Context,
 	return metrics, nil
 }
 
+func (s *PackingRecordService) CalculateHourlyPackDistribution(ctx context.Context,
+	req GetPackingRecordRequest) ([]*HourlyPackDistributionMetrics, error) {
+	dbMetrics, err := s.repository.GetHourlyPackData(ctx, db.GetHourlyPackDataParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(dbMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	metrics := make([]*HourlyPackDistributionMetrics, len(dbMetrics))
+	for i, m := range dbMetrics {
+		packARatio := calculateRatio(float64(m.PackATotal), float64(m.TotalPacks))
+		packBRatio := calculateRatio(float64(m.PackBTotal), float64(m.TotalPacks))
+		packCRatio := calculateRatio(float64(m.PackCTotal), float64(m.TotalPacks))
+		metrics[i] = &HourlyPackDistributionMetrics{
+			Hour:       m.Hour,
+			PackARatio: packARatio,
+			PackBRatio: packBRatio,
+			PackCRatio: packCRatio,
+			TotalPacks: int32(m.TotalPacks),
+		}
+	}
+
+	return metrics, nil
+}
+
+func (s *PackingRecordService) CalculateDailyPackDistribution(ctx context.Context, req GetPackingRecordRequest) ([]*DailyPackDistributionMetrics, error) {
+	dbMetrics, err := s.repository.GetDailyPackData(ctx, db.GetDailyPackDataParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(dbMetrics) == 0 {
+		return nil, ErrRecordNotFound
+	}
+
+	metrics := make([]*DailyPackDistributionMetrics, len(dbMetrics))
+	for i, m := range dbMetrics {
+		packARatio := calculateRatio(float64(m.PackATotal), float64(m.TotalPacks))
+		packBRatio := calculateRatio(float64(m.PackBTotal), float64(m.TotalPacks))
+		packCRatio := calculateRatio(float64(m.PackCTotal), float64(m.TotalPacks))
+		metrics[i] = &DailyPackDistributionMetrics{
+			Day:        m.Day,
+			PackARatio: packARatio,
+			PackBRatio: packBRatio,
+			PackCRatio: packCRatio,
+			TotalPacks: int32(m.TotalPacks),
+		}
+	}
+
+	return metrics, nil
+}
+
 func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	return &PackingRecordResponse{
 		Datetime:     record.Datetime,
@@ -227,9 +286,10 @@ func mapRecordFromDb(record db.PackingRecord) *PackingRecordResponse {
 	}
 }
 
-func calculateRatio(reject, gross float64) float64 {
-	if gross == 0 {
+func calculateRatio(value, total float64) float64 {
+	if total == 0 {
 		return 0
 	}
-	return (reject / gross) * 100
+	ratio := (value / total) * 100
+	return math.Round(ratio*100) / 100
 }
