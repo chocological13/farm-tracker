@@ -282,11 +282,10 @@ func (s *PackingRecordService) CalculateDailyPackDistribution(ctx context.Contex
 // helper methods
 
 func validateTimeRange(req GetPackingRecordRequest) error {
-	if !req.TimeBegin.Valid || !req.TimeEnd.Valid {
-		return ErrInvalidTimeRange
-	}
-	if req.TimeEnd.Time.Before(req.TimeBegin.Time) {
-		return ErrInvalidTimeRange
+	if req.TimeBegin.Valid && req.TimeEnd.Valid {
+		if req.TimeEnd.Time.Before(req.TimeBegin.Time) {
+			return ErrInvalidTimeRange
+		}
 	}
 	return nil
 }
