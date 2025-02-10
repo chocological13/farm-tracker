@@ -3,16 +3,17 @@ import { DataStateWrapper } from "@/components/DataStateWrapper";
 import { ChartCard } from "@/app/(home)/_components/charts/ChartCard";
 import { usePackingData } from "@/hooks/usePackingData";
 import { HourlyPackTypeChart } from "@/app/(home)/_components/charts/HourlyPackChart";
-import { ProductivityChart } from "@/app/(home)/_components/charts/ProductivityChart";
 import { RejectRatioChart } from "@/app/(home)/_components/charts/RejectRatioChart";
 import HourlyPerformanceChart from "@/app/(home)/_components/charts/HourlyPerformanceChart";
 import { PackDistributionChart } from "@/app/(home)/_components/charts/PackDistributionChart";
+import ProductivityChart from "@/app/(home)/_components/charts/ProductivityChart";
 
 const Dashboard = () => {
   const {
     hourlyPICData,
     hourlyPackData,
     productivityData,
+    dailyProductivityData,
     rejectRatios,
     dailyRejectRatios,
     packDistribution,
@@ -26,7 +27,7 @@ const Dashboard = () => {
     <DataStateWrapper isLoading={isLoading} error={error}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         <ChartCard
-          title="Hourly PIC Performance"
+          title="Hourly Packs Per PIC"
           onRefresh={refreshData}
           className="col-span-1 md:col-span-2"
         >
@@ -39,15 +40,22 @@ const Dashboard = () => {
         >
           <HourlyPackTypeChart data={hourlyPackData} />
         </ChartCard>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
         <ChartCard
-          title="Productivity per PIC"
+          title="PIC Productivity (Packs Per Minute)"
           onRefresh={refreshData}
           className="col-span-1 md:col-span-2"
         >
-          <ProductivityChart data={productivityData} />
+          <ProductivityChart data={productivityData} hourly={true} />
         </ChartCard>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+        <ChartCard
+          title="PIC Productivity (Daily Average)"
+          onRefresh={refreshData}
+          className="col-span-1 md:col-span-2"
+        >
+          <ProductivityChart data={dailyProductivityData} hourly={false} />
+        </ChartCard>
         <ChartCard
           title="Hourly Reject Ratio Chart"
           onRefresh={refreshData}

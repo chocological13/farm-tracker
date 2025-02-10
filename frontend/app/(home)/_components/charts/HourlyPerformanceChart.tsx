@@ -1,59 +1,85 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { CHART_COLORS } from "@/constants/colors";
+import { HourlyPICMetric } from "@/types/records";
 
 interface HourlyPerformanceProps {
-  data: any[];
+  data: HourlyPICMetric[];
 }
 
+const generateColorPalette = (pics: string[]) => {
+  const baseColors = [
+    "#3B82F6", // Blue
+    "#10B981", // Green
+    "#EF4444", // Red
+    "#8B5CF6", // Purple
+    "#F59E0B", // Amber
+    "#6366F1", // Indigo
+    "#EC4899", // Pink
+    "#14B8A6", // Teal
+  ];
+
+  return pics.reduce(
+    (acc, pic, index) => {
+      acc[pic] = baseColors[index % baseColors.length];
+      return acc;
+    },
+    {} as { [key: string]: string },
+  );
+};
+
 const HourlyPerformanceChart = ({ data }: HourlyPerformanceProps) => {
+  const processedData = useMemo(() => {
+    return data.reduce((acc, item) => {
+      const existingHour = acc.find((group) => group.hour === item.hour);
+
+      if (existingHour) {
+        existingHour[item.pic] = item.total_packs;
+      } else {
+        const newGroup = {
+          hour: item.hour,
+          [item.pic]: item.total_packs,
+        };
+        acc.push(newGroup);
+      }
+
+      return acc;
+    }, [] as any[]);
+  }, [data]);
+
+  const pics = useMemo(
+    () => [...new Set(data.map((item) => item.pic))],
+    [data],
+  );
+  const picColors = useMemo(() => generateColorPalette(pics), [pics]);
+
   return (
-    <div className="h-[300px]">
+    <div className="h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke={CHART_COLORS.background}
-          />
-          <XAxis
-            dataKey="pic"
-            stroke={CHART_COLORS.tertiary}
-            interval={0}
-            hide
-          />
-          <XAxis dataKey="hour" stroke={CHART_COLORS.tertiary} xAxisId="hour" />
-          <YAxis stroke={CHART_COLORS.tertiary} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "#fff",
-              border: "1px solid #e5e7eb",
-              borderRadius: "6px",
-            }}
-          />
+        <BarChart data={processedData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="hour" />
+          <YAxis />
+          <Tooltip labelFormatter={(label) => `Hour: ${label}`} />
           <Legend />
-          <Bar
-            dataKey="total_packs"
-            fill={CHART_COLORS.primary}
-            name="Total Packs"
-            opacity={0.8}
-            stackId="a"
-          />
-          <Bar
-            dataKey="gross_weight"
-            fill={CHART_COLORS.secondary}
-            name="Gross Weight (kg)"
-            opacity={0.8}
-            stackId="a"
-          />
+
+          {pics.map((pic) => (
+            <Bar
+              key={pic}
+              dataKey={pic}
+              fill={picColors[pic]}
+              name={pic}
+              opacity={0.8}
+            />
+          ))}
         </BarChart>
       </ResponsiveContainer>
     </div>
