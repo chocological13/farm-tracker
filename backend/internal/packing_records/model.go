@@ -48,9 +48,15 @@ type HourlyPackData struct {
 }
 
 type ProductivityMetrics struct {
-	Pic            string  `json:"pic"`
-	PacksPerMinute float64 `json:"packs_per_minute"`
-	DailyAverage   float64 `json:"daily_average"`
+	Hour           pgtype.Timestamp `json:"hour"`
+	Pic            string           `json:"pic"`
+	PacksPerMinute float64          `json:"packs_per_minute"`
+}
+
+type DailyProductivityMetrics struct {
+	Day          pgtype.Timestamp `json:"hour"`
+	Pic          string           `json:"pic"`
+	DailyAverage float64          `json:"daily_average"`
 }
 
 type HourlyRejectRatioMetrics struct {
