@@ -39,7 +39,7 @@ export const apiService = {
 
     getHourlyPackData: async ():Promise<HourlyPackData[]> => {
         try {
-            const response = await api.get('records/hourly-pack-data');
+            const response = await api.get('/records/hourly-pack-data');
             return response.data.metrics;
         } catch (error: any) {
             logger.error("Failed to fetch metrics", {error})
@@ -59,7 +59,7 @@ export const apiService = {
 
     getHourlyRejectRatios: async (): Promise<RejectRatio[]> => {
         try {
-            const response = await api.get('records/reject-ratios/hourly');
+            const response = await api.get('/records/reject-ratios/hourly');
             return response.data.metrics;
         } catch (error: any) {
             logger.error("Failed to fetch metrics", {error})
@@ -69,7 +69,7 @@ export const apiService = {
 
     getDailyRejectRatios: async (): Promise<RejectRatio[]> => {
         try {
-            const response = await api.get('records/reject-ratios/daily');
+            const response = await api.get('/records/reject-ratios/daily');
             return response.data.metrics;
         } catch (error: any) {
             logger.error("Failed to fetch metrics", {error})
@@ -79,7 +79,7 @@ export const apiService = {
 
     getHourlyDistribution: async (): Promise<PackDistribution[]> => {
         try {
-            const response = await api.get('records/distributions/hourly');
+            const response = await api.get('/records/distributions/hourly');
             return response.data.metrics;
         } catch (error: any) {
             logger.error("Failed to fetch metrics", {error})
@@ -89,7 +89,7 @@ export const apiService = {
 
     getDailyDistribution: async (): Promise<PackDistribution[]> => {
         try {
-            const response = await api.get('records/distributions/daily');
+            const response = await api.get('/records/distributions/daily');
             return response.data.metrics;
         } catch (error: any) {
             logger.error("Failed to fetch metrics", {error})
