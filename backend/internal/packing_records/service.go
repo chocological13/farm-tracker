@@ -6,7 +6,6 @@ import (
 	"github.com/chocological13/farm-tracker/internal/util"
 	"golang.org/x/net/context"
 	"math"
-	"time"
 )
 
 const (
@@ -118,6 +117,25 @@ func (s *PackingRecordService) CalculateProductivity(ctx context.Context, req Ge
 		return nil, err
 	}
 
+	metrics := make([]*ProductivityMetrics, len(hourlyMetrics))
+	for i, m := range hourlyMetrics {
+
+		metrics[i] = &ProductivityMetrics{
+			Hour:           m.Hour,
+			Pic:            m.Pic,
+			PacksPerMinute: math.Round((float64(m.TotalPacks)/60.0)*100) / 100,
+		}
+	}
+
+	return metrics, nil
+}
+
+func (s *PackingRecordService) CalculateDailyProductivity(ctx context.Context,
+	req GetPackingRecordRequest) ([]*DailyProductivityMetrics, error) {
+	if err := validateTimeRange(req); err != nil {
+		return nil, err
+	}
+
 	dailyMetrics, err := s.repository.GetDailyPICData(ctx, db.GetDailyPICDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
@@ -129,24 +147,12 @@ func (s *PackingRecordService) CalculateProductivity(ctx context.Context, req Ge
 		return nil, ErrRecordNotFound
 	}
 
-	// Map for daily totals for quick lookup
-	dailyTotals := make(map[string]map[time.Time]int64)
-	for _, d := range dailyMetrics {
-		if _, ok := dailyTotals[d.Pic]; !ok {
-			dailyTotals[d.Pic] = make(map[time.Time]int64)
-		}
-		dailyTotals[d.Pic][d.Day.Time] = d.DailyPacks
-	}
-
-	metrics := make([]*ProductivityMetrics, len(hourlyMetrics))
-	for i, m := range hourlyMetrics {
-		day := m.Hour.Time.Truncate(24 * time.Hour)
-		dailyPacks := dailyTotals[m.Pic][day]
-
-		metrics[i] = &ProductivityMetrics{
-			Pic:            m.Pic,
-			PacksPerMinute: math.Round((float64(m.TotalPacks)/60.0)*100) / 100,
-			DailyAverage:   math.Round((float64(dailyPacks)/(10*60.0))*100) / 100,
+	metrics := make([]*DailyProductivityMetrics, len(dailyMetrics))
+	for i, m := range dailyMetrics {
+		metrics[i] = &DailyProductivityMetrics{
+			Day:          m.Day,
+			Pic:          m.Pic,
+			DailyAverage: math.Round((float64(m.DailyPacks)/(10*60.0))*100) / 100,
 		}
 	}
 
