@@ -106,6 +106,23 @@ func (h *PackingRecordHandler) GetProductivityMetrics(c *gin.Context) {
 
 }
 
+func (h *PackingRecordHandler) GetDailyProductivityMetrics(c *gin.Context) {
+	input, err := h.parseTimeParams(c)
+	if err != nil {
+		util.GlobalErrorHandler.BadRequestResponse(c, err)
+		return
+	}
+
+	metrics, err := h.service.CalculateDailyProductivity(c, input)
+	if err != nil {
+		h.handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, util.Envelope{"metrics": metrics})
+
+}
+
 func (h *PackingRecordHandler) GetHourlyRejectRatios(c *gin.Context) {
 	input, err := h.parseTimeParams(c)
 	if err != nil {
