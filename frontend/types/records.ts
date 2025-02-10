@@ -1,7 +1,7 @@
 export interface PackingRecord {
     datetime: string;
     pic: string;
-    gross_wight: number;
+    gross_weight: number;
     pack_a_qty: number;
     pack_b_qty: number;
     pack_c_qty: number;
