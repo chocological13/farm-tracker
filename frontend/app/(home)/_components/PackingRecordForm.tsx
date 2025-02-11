@@ -168,8 +168,6 @@ const PackingRecordForm = () => {
               className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
               step="0.01"
               required
-              readOnly
-              disabled
             />
           </div>
           <div>
@@ -184,6 +182,8 @@ const PackingRecordForm = () => {
               className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
               step="0.01"
               required
+              readOnly
+              disabled
             />
           </div>
         </div>
