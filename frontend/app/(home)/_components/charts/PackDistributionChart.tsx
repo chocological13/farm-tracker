@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import { formatDay, formatHour, groupDataByDate } from "@/utils/date";
 import {
   Area,
@@ -37,7 +38,7 @@ const formatData = (data: any[], day: boolean) => {
 };
 
 const renderTooltipContent = (props: any) => {
-  const { payload, label } = props;
+  const { payload } = props;
   if (!payload || payload.length === 0) return null;
 
   const dataPoint = payload[0].payload;

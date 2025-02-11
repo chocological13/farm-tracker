@@ -1,7 +1,6 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import React, { useMemo } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Legend,
   Line,

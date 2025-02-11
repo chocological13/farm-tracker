@@ -7,7 +7,7 @@ import React from "react";
 
 const PackingRecordForm = () => {
   const { toast } = useToast();
-  const { formData, handleSubmit, handleChange, resetForm } = usePackingForm();
+  const { formData, handleSubmit, handleChange } = usePackingForm();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import React from "react";
 import {
   CartesianGrid,
@@ -26,13 +27,6 @@ export const HourlyPackTypeChart = ({ data }: HourlyPackChartProps) => {
   }));
 
   const dateGroups = groupDataByDate(data);
-  const dates = Object.keys(dateGroups);
-
-  const tickFormat = ({ value, index }: { value: any; index: any }) => {
-    const hoursInGroup = dateGroups[value]?.length || 1;
-    const middleIndex = Math.floor(hoursInGroup / 2);
-    return index % hoursInGroup === middleIndex ? value : "";
-  };
 
   return (
     <div className="h-[400px]">
@@ -57,7 +51,9 @@ export const HourlyPackTypeChart = ({ data }: HourlyPackChartProps) => {
             xAxisId="day"
             tick={{ fontSize: 12 }}
             tickFormatter={(value, index) => {
-              return tickFormat({ value, index });
+              const hoursInGroup = dateGroups[value]?.length || 1;
+              const middleIndex = Math.floor(hoursInGroup / 2);
+              return index % hoursInGroup === middleIndex ? value : "";
             }}
           />
 
