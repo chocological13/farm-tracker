@@ -2,16 +2,11 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_COLORS } from "@/constants/colors";
 
 interface PackDistributionChartProps {
   data: any[];

@@ -57,14 +57,12 @@ export const usePackingData = () => {
       setHourlyPICData(
         hourlyPIC.map((item) => ({
           ...item,
-          hour: formatHour(item.hour),
         })),
       );
 
       setHourlyPackData(
         hourlyPackData.map((item) => ({
           ...item,
-          hour: formatHour(item.hour),
         })),
       );
 
