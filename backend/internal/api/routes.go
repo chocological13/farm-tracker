@@ -8,15 +8,32 @@ import (
 func SetupRoutes(r *gin.Engine, packingRecordHandler *packing_record.PackingRecordHandler) {
 	api := r.Group("/api/v1/records")
 	{
+		// Base record operations
 		api.GET("", packingRecordHandler.GetPackingRecords)
 		api.POST("", packingRecordHandler.CreatePackingRecord)
-		api.GET("/hourly-pic", packingRecordHandler.GetHourlyPICMetrics)
-		api.GET("/hourly-pack-data", packingRecordHandler.GetHourlyPackData)
-		api.GET("/productivity/hourly", packingRecordHandler.GetProductivityMetrics)
-		api.GET("/productivity/daily", packingRecordHandler.GetDailyProductivityMetrics)
-		api.GET("/reject-ratios/hourly", packingRecordHandler.GetHourlyRejectRatios)
-		api.GET("/reject-ratios/daily", packingRecordHandler.GetDailyRejectRatios)
-		api.GET("/distributions/hourly", packingRecordHandler.GetHourlyPackDistribution)
-		api.GET("/distributions/daily", packingRecordHandler.GetDailyPackDistribution)
+
+		// Metrics endpoints
+		metrics := api.Group("/metrics")
+		{
+			pic := metrics.Group("/pic")
+			{
+				pic.GET("/hourly", packingRecordHandler.GetHourlyPICMetrics)
+				pic.GET("/productivity/hourly", packingRecordHandler.GetProductivityMetrics)
+				pic.GET("/productivity/daily", packingRecordHandler.GetDailyProductivityMetrics)
+			}
+
+			packs := metrics.Group("/packs")
+			{
+				packs.GET("/hourly", packingRecordHandler.GetHourlyPackData)
+				packs.GET("/distribution/hourly", packingRecordHandler.GetHourlyPackDistribution)
+				packs.GET("/distribution/daily", packingRecordHandler.GetDailyPackDistribution)
+			}
+
+			rejects := metrics.Group("/rejects")
+			{
+				rejects.GET("/hourly", packingRecordHandler.GetHourlyRejectRatios)
+				rejects.GET("/daily", packingRecordHandler.GetDailyRejectRatios)
+			}
+		}
 	}
 }
