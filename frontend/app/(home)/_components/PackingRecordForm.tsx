@@ -60,6 +60,24 @@ const PackingRecordForm = () => {
     handleChange("datetime", utcDate);
   };
 
+  const handleQuantityChange = (name: string, value: string) => {
+    const newValue = Number(value) || 0;
+
+    // Update the pack quantity
+    handleChange(name, newValue);
+
+    // Calculate the updated gross weight
+    const updatedGrossWeight =
+      (Number(name === "pack_a_qty" ? newValue : formData.pack_a_qty) || 0) *
+        0.2 +
+      (Number(name === "pack_b_qty" ? newValue : formData.pack_b_qty) || 0) *
+        0.3 +
+      (Number(name === "pack_c_qty" ? newValue : formData.pack_c_qty) || 0) *
+        0.4;
+
+    handleChange("gross_weight", updatedGrossWeight.toFixed(2)); // Keep two decimal places
+  };
+
   return (
     <Card className="p-6 bg-stone-50/50 border-stone-200">
       <h2 className="text-2xl font-bold text-rose-800/90 mb-4">
@@ -95,53 +113,45 @@ const PackingRecordForm = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-stone-600">
-              Gross Weight (kg)
-            </label>
-            <Input
-              type="number"
-              name="gross_weight"
-              value={formData.gross_weight}
-              onChange={(e) => handleChange("gross_weight", e.target.value)}
-              className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
-              step="0.01"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-600">
-              Pack A Quantity
+              Pack A Quantity (0.2kg per pack)
             </label>
             <Input
               type="number"
               name="pack_a_qty"
               value={formData.pack_a_qty}
-              onChange={(e) => handleChange("pack_a_qty", e.target.value)}
+              onChange={(e) =>
+                handleQuantityChange("pack_a_qty", e.target.value)
+              }
               className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
               required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-stone-600">
-              Pack B Quantity
+              Pack B Quantity (0.3kg per pack)
             </label>
             <Input
               type="number"
               name="pack_b_qty"
               value={formData.pack_b_qty}
-              onChange={(e) => handleChange("pack_b_qty", e.target.value)}
+              onChange={(e) =>
+                handleQuantityChange("pack_b_qty", e.target.value)
+              }
               className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
               required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-stone-600">
-              Pack C Quantity
+              Pack C Quantity (0.4kg per pack)
             </label>
             <Input
               type="number"
               name="pack_c_qty"
               value={formData.pack_c_qty}
-              onChange={(e) => handleChange("pack_c_qty", e.target.value)}
+              onChange={(e) =>
+                handleQuantityChange("pack_c_qty", e.target.value)
+              }
               className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
               required
             />
@@ -155,6 +165,22 @@ const PackingRecordForm = () => {
               name="reject_weight"
               value={formData.reject_weight}
               onChange={(e) => handleChange("reject_weight", e.target.value)}
+              className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
+              step="0.01"
+              required
+              readOnly
+              disabled
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-stone-600">
+              Gross Weight (kg)
+            </label>
+            <Input
+              type="number"
+              name="gross_weight"
+              value={formData.gross_weight}
+              onChange={(e) => handleChange("gross_weight", e.target.value)}
               className="mt-1 border-stone-200 focus:ring-rose-600/20 focus:border-rose-600/20"
               step="0.01"
               required
