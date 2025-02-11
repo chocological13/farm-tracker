@@ -208,7 +208,7 @@ func (s *PackingRecordService) CalculateDailyRejectRatios(ctx context.Context,
 
 	metrics := make([]*DailyRejectRatioMetrics, len(dbMetrics))
 	for i, m := range dbMetrics {
-		ratio := calculateRatio(m.TotalGrossWeight, m.TotalRejectWeight)
+		ratio := calculateRatio(m.TotalRejectWeight, m.TotalGrossWeight)
 		metrics[i] = &DailyRejectRatioMetrics{
 			Day:              m.Day,
 			DailyRejectRatio: ratio,
