@@ -69,40 +69,35 @@ export const usePackingData = () => {
       setProductivityData(
         productivity.map((item) => ({
           ...item,
-          hour: item.hour ? formatHour(item.hour) : undefined,
         })),
       );
 
       setDailyProductivityData(
         dailyProductivity.map((item) => ({
           ...item,
-          day: item.day ? formatHour(item.day) : undefined,
         })),
       );
       setRejectRatios(
         rejectRatiosData.map((item) => ({
           ...item,
-          hour: item.hour ? formatHour(item.hour) : undefined,
         })),
       );
 
       setDailyRejectRatios(
         dailyRejectRatiosData.map((item) => ({
           ...item,
-          day: item.day ? formatDay(item.day) : undefined,
         })),
       );
+
       setPackDistribution(
         distribution.map((item) => ({
           ...item,
-          hour: item.hour ? formatHour(item.hour) : undefined,
         })),
       );
 
       setDailyPackDistribution(
         dailyDistribution.map((item) => ({
           ...item,
-          day: item.day ? formatHour(item.day) : undefined,
         })),
       );
     } catch (error) {

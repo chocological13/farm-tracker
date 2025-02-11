@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns";
 
 export const formatDateTime = (dateString: string): string => {
   try {
-    const date = parseISO(dateString);
+    const date = parseISO(dateString.replace("Z", ""));
     return format(date, "MMM dd, yyyy HH:mm");
   } catch (error) {
     return dateString;
@@ -11,7 +11,7 @@ export const formatDateTime = (dateString: string): string => {
 
 export const formatHour = (dateString: string): string => {
   try {
-    const date = parseISO(dateString);
+    const date = parseISO(dateString.replace("Z", ""));
     return format(date, "HH:mm");
   } catch (error) {
     return dateString;
@@ -20,7 +20,7 @@ export const formatHour = (dateString: string): string => {
 
 export const formatDay = (dateString: string): string => {
   try {
-    const date = new Date(dateString);
+    const date = new Date(dateString.replace("Z", ""));
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",

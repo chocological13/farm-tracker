@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Farm Dashboard",
+  title: "Hyoshii Farm Dashboard",
   description: "Strawberry Packing Tracker",
 };
 

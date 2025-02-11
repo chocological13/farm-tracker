@@ -11,7 +11,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
       <header className="bg-rose-700/90 text-stone-50 p-4">
         <div className="container mx-auto">
-          <h1 className="text-3xl font-bold">Farm Dashboard</h1>
+          <h1 className="text-3xl font-bold">Hyoshii Farm Dashboard</h1>
           <p className="text-stone-100/80">Strawberry Packing Tracker</p>
         </div>
       </header>
