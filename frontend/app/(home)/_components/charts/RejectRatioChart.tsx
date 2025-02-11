@@ -11,6 +11,7 @@ import {
 import { CHART_COLORS } from "@/constants/colors";
 import { RejectRatio } from "@/types/records";
 import { formatDay, formatHour, groupDataByDate } from "@/utils/date";
+import React from "react";
 
 interface RejectRatioChartProps {
   data: RejectRatio[];
@@ -36,7 +37,14 @@ const formatData = (data: any[], day: boolean) => {
 export const RejectRatioChart = ({ data, day }: RejectRatioChartProps) => {
   const processedData = formatData(data, day);
 
-  const dateGroups = day ? null : groupDataByDate(data);
+  const timeKey = !day ? "hourDisplay" : "displayTime";
+
+  const dateGroups = groupDataByDate(data);
+  const tickFormat = ({ value, index }: { value: any; index: any }) => {
+    const hoursInGroup = dateGroups[value]?.length || 1;
+    const middleIndex = Math.floor(hoursInGroup / 2);
+    return index % hoursInGroup === middleIndex ? value : "";
+  };
 
   return (
     <div className="h-[400px]">
@@ -49,33 +57,27 @@ export const RejectRatioChart = ({ data, day }: RejectRatioChartProps) => {
             strokeDasharray="3 3"
             stroke={CHART_COLORS.background}
           />
+          <XAxis
+            dataKey={timeKey}
+            stroke={CHART_COLORS.tertiary}
+            interval={0}
+            tick={{ fontSize: 12 }}
+          />
           {!day ? (
-            <>
-              <XAxis
-                dataKey="hourDisplay"
-                stroke={CHART_COLORS.tertiary}
-                interval={0}
-                tick={{ fontSize: 12 }}
-                xAxisId="hours"
-              />
-              <XAxis
-                dataKey="dateDisplay"
-                stroke={CHART_COLORS.tertiary}
-                xAxisId="dates"
-                orientation="bottom"
-                interval={0}
-                tick={{ fontSize: 12 }}
-                height={50}
-                tickFormatter={(value, index) => {
-                  if (!dateGroups) return value;
-                  const hoursInGroup = dateGroups[value]?.length || 1;
-                  const middleIndex = Math.floor(hoursInGroup / 2);
-                  return index % hoursInGroup === middleIndex ? value : "";
-                }}
-              />
-            </>
+            <XAxis
+              dataKey="dateDisplay"
+              orientation="bottom"
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+              xAxisId="dates"
+              tick={{ fontSize: 12 }}
+              tickFormatter={(value, index) => {
+                return tickFormat({ value, index });
+              }}
+            />
           ) : (
-            <XAxis dataKey="displayTime" stroke={CHART_COLORS.tertiary} />
+            <></>
           )}
           <YAxis stroke={CHART_COLORS.tertiary} />
           <Tooltip

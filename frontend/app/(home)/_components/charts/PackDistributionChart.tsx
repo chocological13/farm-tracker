@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import React from "react";
 import { PackDistribution } from "@/types/records";
+import { CHART_COLORS } from "@/constants/colors";
 
 interface PackDistributionChartProps {
   data: PackDistribution[];
@@ -65,7 +66,14 @@ export const PackDistributionChart = ({
   day,
 }: PackDistributionChartProps) => {
   const formattedData = formatData(data, day);
-  const dateGroups = day ? null : groupDataByDate(data);
+  const timeKey = !day ? "hourDisplay" : "displayTime";
+
+  const dateGroups = groupDataByDate(data);
+  const tickFormat = ({ value, index }: { value: any; index: any }) => {
+    const hoursInGroup = dateGroups[value]?.length || 1;
+    const middleIndex = Math.floor(hoursInGroup / 2);
+    return index % hoursInGroup === middleIndex ? value : "";
+  };
 
   return (
     <div className="h-[400px]">
@@ -76,33 +84,27 @@ export const PackDistributionChart = ({
           margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey={timeKey}
+            stroke={CHART_COLORS.tertiary}
+            interval={0}
+            tick={{ fontSize: 12 }}
+          />
           {!day ? (
-            <>
-              <XAxis
-                dataKey="hourDisplay"
-                interval={0}
-                xAxisId="1"
-                tick={{ fontSize: 12 }}
-              />
-              <XAxis
-                dataKey="dateDisplay"
-                orientation="bottom"
-                axisLine={false}
-                tickLine={false}
-                interval={0}
-                xAxisId="2"
-                height={50}
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value, index) => {
-                  if (!dateGroups) return value;
-                  const hoursInGroup = dateGroups[value]?.length || 1;
-                  const middleIndex = Math.floor(hoursInGroup / 2);
-                  return index % hoursInGroup === middleIndex ? value : "";
-                }}
-              />
-            </>
+            <XAxis
+              dataKey="dateDisplay"
+              orientation="bottom"
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+              xAxisId="dates"
+              tick={{ fontSize: 12 }}
+              tickFormatter={(value, index) => {
+                return tickFormat({ value, index });
+              }}
+            />
           ) : (
-            <XAxis dataKey="displayTime" />
+            <></>
           )}
           <YAxis tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
           <Tooltip content={renderTooltipContent} />
