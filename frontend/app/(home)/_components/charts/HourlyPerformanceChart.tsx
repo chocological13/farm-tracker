@@ -10,6 +10,8 @@ import {
   YAxis,
 } from "recharts";
 import { HourlyPICMetric } from "@/types/records";
+import { formatDay, formatHour, groupDataByDate } from "@/utils/date";
+import { labelFormat } from "@/utils/chart";
 
 interface HourlyPerformanceProps {
   data: HourlyPICMetric[];
@@ -39,13 +41,18 @@ const generateColorPalette = (pics: string[]) => {
 const HourlyPerformanceChart = ({ data }: HourlyPerformanceProps) => {
   const processedData = useMemo(() => {
     return data.reduce((acc, item) => {
-      const existingHour = acc.find((group) => group.hour === item.hour);
+      const hourDisplay = formatHour(item.hour);
+      const dateDisplay = formatDay(item.hour);
 
-      if (existingHour) {
-        existingHour[item.pic] = item.total_packs;
+      const existingTime = acc.find((group) => group.hour === item.hour);
+
+      if (existingTime) {
+        existingTime[item.pic] = item.total_packs;
       } else {
         const newGroup = {
           hour: item.hour,
+          hourDisplay,
+          dateDisplay,
           [item.pic]: item.total_packs,
         };
         acc.push(newGroup);
@@ -60,15 +67,43 @@ const HourlyPerformanceChart = ({ data }: HourlyPerformanceProps) => {
     [data],
   );
   const picColors = useMemo(() => generateColorPalette(pics), [pics]);
+  const dateGroups = groupDataByDate(data);
+
+  const tickFormat = ({ value, index }: { value: any; index: any }) => {
+    const hoursInGroup = dateGroups[value]?.length || 1;
+    const middleIndex = Math.floor(hoursInGroup / 2);
+    return index % hoursInGroup === middleIndex ? value : "";
+  };
 
   return (
     <div className="h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={processedData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="hour" />
+
+          {/* Hour X-Axis */}
+          <XAxis dataKey="hourDisplay" interval={0} tick={{ fontSize: 12 }} />
+
+          {/* Date X-Axis */}
+          <XAxis
+            dataKey="dateDisplay"
+            orientation="bottom"
+            axisLine={false}
+            tickLine={false}
+            interval={0}
+            xAxisId="dates"
+            tick={{ fontSize: 12 }}
+            tickFormatter={(value, index) => {
+              return tickFormat({ value, index });
+            }}
+          />
+
           <YAxis />
-          <Tooltip labelFormatter={(label) => `Hour: ${label}`} />
+          <Tooltip
+            labelFormatter={(_, payload) => {
+              return labelFormat({ _, payload });
+            }}
+          />
           <Legend />
 
           {pics.map((pic) => (
