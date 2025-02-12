@@ -18,6 +18,8 @@ type PackingRecordResponse struct {
 type GetPackingRecordRequest struct {
 	TimeBegin pgtype.Timestamp `json:"time_begin"`
 	TimeEnd   pgtype.Timestamp `json:"time_end"`
+	Limit     int32            `json:"limit"`
+	Offset    int32            `json:"offset"`
 }
 
 type CreatePackingRecordRequest struct {

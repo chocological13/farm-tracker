@@ -33,10 +33,7 @@ func (s *PackingRecordService) GetPackingRecords(ctx context.Context,
 		return nil, err
 	}
 
-	params := db.GetPackingRecordsParams{
-		Column1: util.MakeNullTimestamp(req.TimeBegin),
-		Column2: util.MakeNullTimestamp(req.TimeEnd),
-	}
+	params := mapParamsToDbParams(req)
 
 	packingRecords, err := s.repository.GetPackingRecords(ctx, params)
 
@@ -74,6 +71,8 @@ func (s *PackingRecordService) GetHourlyPICMetrics(ctx context.Context,
 	dbMetrics, err := s.repository.GetHourlyPICData(ctx, db.GetHourlyPICDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -94,6 +93,8 @@ func (s *PackingRecordService) GetHourlyPackData(ctx context.Context, req GetPac
 	dbMetrics, err := s.repository.GetHourlyPackData(ctx, db.GetHourlyPackDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -139,6 +140,8 @@ func (s *PackingRecordService) CalculateDailyProductivity(ctx context.Context,
 	dailyMetrics, err := s.repository.GetDailyPICData(ctx, db.GetDailyPICDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -169,6 +172,8 @@ func (s *PackingRecordService) CalculateHourlyRejectRatios(ctx context.Context,
 	dbMetrics, err := s.repository.GetHourlyRejectRatio(ctx, db.GetHourlyRejectRatioParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -198,6 +203,8 @@ func (s *PackingRecordService) CalculateDailyRejectRatios(ctx context.Context,
 	dbMetrics, err := s.repository.GetDailyRejectRatio(ctx, db.GetDailyRejectRatioParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -227,6 +234,8 @@ func (s *PackingRecordService) CalculateHourlyPackDistribution(ctx context.Conte
 	dbMetrics, err := s.repository.GetHourlyPackData(ctx, db.GetHourlyPackDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -260,6 +269,8 @@ func (s *PackingRecordService) CalculateDailyPackDistribution(ctx context.Contex
 	dbMetrics, err := s.repository.GetDailyPackData(ctx, db.GetDailyPackDataParams{
 		Column1: util.MakeNullTimestamp(req.TimeBegin),
 		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -366,4 +377,13 @@ func mapHourlyPackData(data []db.GetHourlyPackDataRow) []*HourlyPackData {
 		}
 	}
 	return metrics
+}
+
+func mapParamsToDbParams(req GetPackingRecordRequest) db.GetPackingRecordsParams {
+	return db.GetPackingRecordsParams{
+		Column1: util.MakeNullTimestamp(req.TimeBegin),
+		Column2: util.MakeNullTimestamp(req.TimeEnd),
+		Column3: req.Limit,
+		Offset:  req.Offset,
+	}
 }

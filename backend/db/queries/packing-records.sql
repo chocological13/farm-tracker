@@ -9,7 +9,9 @@ SELECT *
 FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
-ORDER BY datetime;
+ORDER BY datetime
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
 -- name: GetHourlyPICData :many
 SELECT
@@ -21,7 +23,9 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour, pic
-ORDER BY hour;
+ORDER BY hour
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
 -- name: GetDailyPICData :many
 SELECT
@@ -33,7 +37,9 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY day, pic
-ORDER BY day;
+ORDER BY day
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
 -- name: GetHourlyPackData :many
 SELECT
@@ -46,7 +52,9 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour
-ORDER BY hour;
+ORDER BY hour
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
 -- name: GetDailyPackData :many
 SELECT
@@ -59,7 +67,9 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY day
-ORDER BY day;
+ORDER BY day
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
 -- name: GetHourlyRejectRatio :many
 SELECT
@@ -70,7 +80,9 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour
-ORDER BY hour;
+ORDER BY hour
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
 -- name: GetDailyRejectRatio :many
 SELECT
@@ -81,5 +93,7 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY day
-ORDER BY day;
+ORDER BY day
+LIMIT NULLIF($3, 0)
+OFFSET $4;
 
