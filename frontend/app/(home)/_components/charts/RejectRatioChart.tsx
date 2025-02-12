@@ -79,13 +79,17 @@ export const RejectRatioChart = ({ data, day }: RejectRatioChartProps) => {
           ) : (
             <></>
           )}
-          <YAxis stroke={CHART_COLORS.tertiary} />
+          <YAxis
+            stroke={CHART_COLORS.tertiary}
+            tickFormatter={(value) => `${value.toFixed(1)}%`}
+          />
           <Tooltip
             contentStyle={{
               backgroundColor: "#fff",
               border: "1px solid #e5e7eb",
               borderRadius: "6px",
             }}
+            formatter={(value) => [`${value}%`, "Reject Ratio"]}
             labelFormatter={(_, payload) => {
               if (payload && payload.length > 0) {
                 const dataPoint = payload[0].payload;
