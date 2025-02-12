@@ -22,11 +22,15 @@ WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY day, pic
 ORDER BY day
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetDailyPICDataParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 type GetDailyPICDataRow struct {
@@ -37,7 +41,12 @@ type GetDailyPICDataRow struct {
 }
 
 func (q *Queries) GetDailyPICData(ctx context.Context, arg GetDailyPICDataParams) ([]GetDailyPICDataRow, error) {
-	rows, err := q.db.Query(ctx, getDailyPICData, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getDailyPICData,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +82,15 @@ WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY day
 ORDER BY day
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetDailyPackDataParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 type GetDailyPackDataRow struct {
@@ -89,7 +102,12 @@ type GetDailyPackDataRow struct {
 }
 
 func (q *Queries) GetDailyPackData(ctx context.Context, arg GetDailyPackDataParams) ([]GetDailyPackDataRow, error) {
-	rows, err := q.db.Query(ctx, getDailyPackData, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getDailyPackData,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -124,11 +142,15 @@ WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY day
 ORDER BY day
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetDailyRejectRatioParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 type GetDailyRejectRatioRow struct {
@@ -138,7 +160,12 @@ type GetDailyRejectRatioRow struct {
 }
 
 func (q *Queries) GetDailyRejectRatio(ctx context.Context, arg GetDailyRejectRatioParams) ([]GetDailyRejectRatioRow, error) {
-	rows, err := q.db.Query(ctx, getDailyRejectRatio, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getDailyRejectRatio,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -168,11 +195,15 @@ WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour, pic
 ORDER BY hour
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetHourlyPICDataParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 type GetHourlyPICDataRow struct {
@@ -183,7 +214,12 @@ type GetHourlyPICDataRow struct {
 }
 
 func (q *Queries) GetHourlyPICData(ctx context.Context, arg GetHourlyPICDataParams) ([]GetHourlyPICDataRow, error) {
-	rows, err := q.db.Query(ctx, getHourlyPICData, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getHourlyPICData,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -219,11 +255,15 @@ WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour
 ORDER BY hour
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetHourlyPackDataParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 type GetHourlyPackDataRow struct {
@@ -235,7 +275,12 @@ type GetHourlyPackDataRow struct {
 }
 
 func (q *Queries) GetHourlyPackData(ctx context.Context, arg GetHourlyPackDataParams) ([]GetHourlyPackDataRow, error) {
-	rows, err := q.db.Query(ctx, getHourlyPackData, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getHourlyPackData,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -270,11 +315,15 @@ WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 GROUP BY hour
 ORDER BY hour
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetHourlyRejectRatioParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 type GetHourlyRejectRatioRow struct {
@@ -284,7 +333,12 @@ type GetHourlyRejectRatioRow struct {
 }
 
 func (q *Queries) GetHourlyRejectRatio(ctx context.Context, arg GetHourlyRejectRatioParams) ([]GetHourlyRejectRatioRow, error) {
-	rows, err := q.db.Query(ctx, getHourlyRejectRatio, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getHourlyRejectRatio,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -309,15 +363,24 @@ FROM packing_records
 WHERE ($1::TIMESTAMP IS NULL OR datetime >= $1)
   AND ($2::TIMESTAMP IS NULL OR datetime <= $2)
 ORDER BY datetime
+LIMIT NULLIF($3, 0)
+OFFSET $4
 `
 
 type GetPackingRecordsParams struct {
 	Column1 pgtype.Timestamp `json:"column_1"`
 	Column2 pgtype.Timestamp `json:"column_2"`
+	Column3 interface{}      `json:"column_3"`
+	Offset  int32            `json:"offset"`
 }
 
 func (q *Queries) GetPackingRecords(ctx context.Context, arg GetPackingRecordsParams) ([]PackingRecord, error) {
-	rows, err := q.db.Query(ctx, getPackingRecords, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, getPackingRecords,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

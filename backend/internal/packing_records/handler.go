@@ -16,7 +16,7 @@ func NewPackingRecordHandler(service *PackingRecordService) *PackingRecordHandle
 }
 
 func (h *PackingRecordHandler) GetPackingRecords(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.ServerErrorResponse(c, err)
 		return
@@ -57,7 +57,7 @@ func (h *PackingRecordHandler) CreatePackingRecord(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyPICMetrics(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -73,7 +73,7 @@ func (h *PackingRecordHandler) GetHourlyPICMetrics(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyPackData(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -90,7 +90,7 @@ func (h *PackingRecordHandler) GetHourlyPackData(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetProductivityMetrics(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -107,7 +107,7 @@ func (h *PackingRecordHandler) GetProductivityMetrics(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetDailyProductivityMetrics(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -124,7 +124,7 @@ func (h *PackingRecordHandler) GetDailyProductivityMetrics(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyRejectRatios(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -140,7 +140,7 @@ func (h *PackingRecordHandler) GetHourlyRejectRatios(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetDailyRejectRatios(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -156,7 +156,7 @@ func (h *PackingRecordHandler) GetDailyRejectRatios(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -172,7 +172,7 @@ func (h *PackingRecordHandler) GetHourlyPackDistribution(c *gin.Context) {
 }
 
 func (h *PackingRecordHandler) GetDailyPackDistribution(c *gin.Context) {
-	input, err := h.parseTimeParams(c)
+	input, err := h.parseParams(c)
 	if err != nil {
 		util.GlobalErrorHandler.BadRequestResponse(c, err)
 		return
@@ -193,7 +193,7 @@ func (h *PackingRecordHandler) GetDailyPackDistribution(c *gin.Context) {
 }
 
 // Helper function to parse time parameters
-func (h *PackingRecordHandler) parseTimeParams(c *gin.Context) (GetPackingRecordRequest, error) {
+func (h *PackingRecordHandler) parseParams(c *gin.Context) (GetPackingRecordRequest, error) {
 	var input GetPackingRecordRequest
 	var err error
 
@@ -203,7 +203,26 @@ func (h *PackingRecordHandler) parseTimeParams(c *gin.Context) (GetPackingRecord
 	}
 
 	input.TimeEnd, err = util.ParseTimestampQueryParam(c.Query("time_end"))
+	if err != nil {
+		return input, err
+	}
+
+	// Create validator
+	v := util.NewValidator()
+
+	// Parse limit and offset using the ReadInt utility
+	limit := util.ReadInt(c.Request.URL.Query(), "limit", 0, v)
+	offset := util.ReadInt(c.Request.URL.Query(), "offset", 0, v)
+
+	input.Limit = int32(limit)
+	input.Offset = int32(offset)
+
+	if !v.Valid() {
+		return input, errors.New("invalid pagination parameters")
+	}
+
 	return input, err
+
 }
 
 // Helper function to handle common error responses
